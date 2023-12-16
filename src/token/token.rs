@@ -16,44 +16,26 @@ pub(crate) enum TokenType {
     LET,
 }
 
-impl From<&str> for TokenType {
-    fn from(s: &str) -> Self {
+impl TokenType {
+    pub fn lookup_ident(s: &str) -> TokenType {
         match s {
-            "EOF" => TokenType::EOF,
-            "IDENT" => TokenType::IDENT,
-            "INT" => TokenType::INT,
-            "=" => TokenType::ASSIGN,
-            "+" => TokenType::PLUS,
-            "," => TokenType::COMMA,
-            ";" => TokenType::SEMICOLON,
-            "(" => TokenType::LPAREN,
-            ")" => TokenType::RPAREN,
-            "{" => TokenType::LBRACE,
-            "}" => TokenType::RBRACE,
-            "FUNCTION" => TokenType::FUNCTION,
-            "LET" => TokenType::LET,
-            _ => TokenType::ILLEGAL,
+            "fn" => TokenType::FUNCTION,
+            "let" => TokenType::LET,
+            _ => TokenType::IDENT,
         }
     }
 }
 
+
+
+#[derive(PartialEq, Eq, Debug)]
 pub struct Token {
     pub(crate) typ: TokenType,
     literal: String,
 }
 
 impl Token {
-    pub fn new(typ: TokenType, literal: String) -> Token {
-        Token {
-            typ,
-            literal,
-        }
+    pub(crate) fn new(typ: TokenType, literal: String) -> Token {
+        Token { typ, literal }
     }
 }
-
-
-
-
-
-
-
