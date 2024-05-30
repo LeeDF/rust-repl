@@ -6,6 +6,12 @@ pub(crate) enum TokenType {
     INT,
     ASSIGN,
     PLUS,
+    LT,
+    GT,
+    EQ,
+    NOT_EQ,
+    BANG,
+
     COMMA,
     SEMICOLON,
     LPAREN,
@@ -14,6 +20,11 @@ pub(crate) enum TokenType {
     RBRACE,
     FUNCTION,
     LET,
+    TRUE,
+    FALSE,
+    IF,
+    ELSE,
+    RETURN,
 }
 
 impl TokenType {
@@ -21,17 +32,20 @@ impl TokenType {
         match s {
             "fn" => TokenType::FUNCTION,
             "let" => TokenType::LET,
+            "true" => TokenType::TRUE,
+            "false" => TokenType::FALSE,
+            "if" => TokenType::IF,
+            "else" => TokenType::ELSE,
+            "return" => TokenType::RETURN,
             _ => TokenType::IDENT,
         }
     }
 }
 
-
-
 #[derive(PartialEq, Eq, Debug)]
 pub struct Token {
     pub(crate) typ: TokenType,
-    literal: String,
+    pub literal: String,
 }
 
 impl Token {

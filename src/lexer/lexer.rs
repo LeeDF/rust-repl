@@ -30,16 +30,43 @@ impl Lexer {
         self.position = self.read_position;
         self.read_position += 1;
     }
-    fn next_token(&mut self) -> token::Token {
+
+    fn peek_char(&self) -> u8 {
+        if self.read_position >= self.input.len() {
+            0
+        } else {
+            self.input.as_bytes()[self.read_position]
+        }
+    }
+
+    pub fn next_token(&mut self) -> token::Token {
         self.skip_whitespace();
         let tk = match self.ch {
-            b'=' => token::Token::new(token::TokenType::ASSIGN, u8to_String(self.ch)),
+            b'=' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    token::Token::new(token::TokenType::EQ, String::from("=="))
+                } else {
+                    token::Token::new(token::TokenType::ASSIGN, u8to_String(self.ch))
+                }
+            }
+            b'!' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    token::Token::new(token::TokenType::NOT_EQ, String::from("!="))
+                } else {
+                    token::Token::new(token::TokenType::BANG, u8to_String(self.ch))
+                }
+            }
             b';' => token::Token::new(token::TokenType::SEMICOLON, u8to_String(self.ch)),
             b'(' => token::Token::new(token::TokenType::LPAREN, u8to_String(self.ch)),
             b')' => token::Token::new(token::TokenType::RPAREN, u8to_String(self.ch)),
             b',' => token::Token::new(token::TokenType::COMMA, u8to_String(self.ch)),
             b'+' => token::Token::new(token::TokenType::PLUS, u8to_String(self.ch)),
             b'{' => token::Token::new(token::TokenType::LBRACE, u8to_String(self.ch)),
+            b'}' => token::Token::new(token::TokenType::RBRACE, u8to_String(self.ch)),
+            b'<' => token::Token::new(token::TokenType::LT, u8to_String(self.ch)),
+            b'>' => token::Token::new(token::TokenType::GT, u8to_String(self.ch)),
             b'}' => token::Token::new(token::TokenType::RBRACE, u8to_String(self.ch)),
             0 => token::Token::new(token::TokenType::EOF, String::from("")),
             _ => {

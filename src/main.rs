@@ -1,5 +1,5 @@
-use rust_repl::token::*;
+use rust_repl::repl::repl;
 
 fn main() {
-    println!("Hello, world!");
+    repl::start();
 }

@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 
-[lib]
-path = "src/lib.rs"
+
+[[bin]]
+name = "rust-repl"
+path = "src/main.rs"
