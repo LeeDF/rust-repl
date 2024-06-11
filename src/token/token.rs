@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub(crate) enum TokenType {
     ILLEGAL,
     EOF,
@@ -42,7 +42,7 @@ impl TokenType {
     }
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Token {
     pub(crate) typ: TokenType,
     pub literal: String,
