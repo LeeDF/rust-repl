@@ -13,9 +13,10 @@ pub trait Statement: Node + Downcast {
 
 impl_downcast!(Statement);
 
-pub trait Expression: Node {
+pub trait Expression: Node + Downcast {
     fn expression_node(&self);
 }
+impl_downcast!(Expression);
 
 pub struct Program {
     pub statements: Vec<Box<dyn Statement>>,
@@ -32,6 +33,7 @@ impl Node for Program {
     fn to_string(&self) -> String {
         let mut out = String::new();
         for v in self.statements.iter() {
+            // println!("pgm to string {:?}", v.to_string());
             out.push_str(v.to_string().as_str());
         }
         out
@@ -71,7 +73,7 @@ impl Program {
         ))
     }
 }
-
+#[derive(Debug)]
 pub struct Identifier {
     pub token: Token,
     pub value: String,
@@ -91,6 +93,29 @@ impl Expression for Identifier {
 impl Identifier {
     pub fn new(token: Token, value: String) -> Identifier {
         Identifier { token, value }
+    }
+}
+
+#[derive(Debug)]
+pub struct Boolean {
+    pub token: Token,
+    pub value: bool,
+}
+
+impl Node for Boolean {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+impl Expression for Boolean {
+    fn expression_node(&self) {}
+}
+impl Boolean {
+    pub fn new(token: Token, value: bool) -> Boolean {
+        Boolean { token, value }
     }
 }
 
@@ -126,7 +151,6 @@ impl LetStatement {
     }
 }
 
-
 pub struct ReturnStatement {
     pub token: Token,
     pub return_value: Box<dyn Expression>,
@@ -151,8 +175,8 @@ impl Statement for ReturnStatement {
 }
 
 impl ReturnStatement {
-    pub fn new(token: Token, return_value: Box<dyn Expression>)->ReturnStatement{
-        ReturnStatement{
+    pub fn new(token: Token, return_value: Box<dyn Expression>) -> ReturnStatement {
+        ReturnStatement {
             token,
             return_value,
         }
@@ -177,20 +201,284 @@ impl Statement for ExpressionStatement {
     fn statement_node(&self) {}
 }
 
+impl ExpressionStatement {
+    pub fn new(token: Token, expression: Box<dyn Expression>) -> ExpressionStatement {
+        ExpressionStatement { token, expression }
+    }
+}
+
+pub struct IntegerLiteral {
+    token: Token,
+    pub value: i64,
+}
+
+impl Node for IntegerLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+
+impl Expression for IntegerLiteral {
+    fn expression_node(&self) {}
+}
+
+impl IntegerLiteral {
+    pub fn new(token: Token, value: i64) -> IntegerLiteral {
+        IntegerLiteral { token, value }
+    }
+}
+pub struct PrefixExpression {
+    pub token: Token,
+    pub operator: String,
+    pub right: Box<dyn Expression>,
+}
+
+impl Node for PrefixExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        let mut ans = String::from("(");
+        ans.push_str(&self.operator);
+        ans.push_str(&self.right.to_string());
+        ans.push_str(")");
+        ans
+    }
+}
+
+impl Expression for PrefixExpression {
+    fn expression_node(&self) {}
+}
+
+impl PrefixExpression {
+    pub fn new(token: Token, operator: String, right: Box<dyn Expression>) -> PrefixExpression {
+        PrefixExpression {
+            token,
+            operator,
+            right,
+        }
+    }
+}
+
+pub struct InfixExpression {
+    pub token: Token,
+    pub left: Box<dyn Expression>,
+    pub operator: String,
+    pub right: Box<dyn Expression>,
+}
+
+impl Node for InfixExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        let mut ans = String::from("(");
+        ans.push_str(&self.left.to_string());
+        ans.push_str(" ");
+        ans.push_str(&self.operator);
+        ans.push_str(" ");
+
+        ans.push_str(&self.right.to_string());
+        ans.push_str(")");
+        ans
+    }
+}
+
+impl Expression for InfixExpression {
+    fn expression_node(&self) {}
+}
+
+impl InfixExpression {
+    pub fn new(
+        token: Token,
+        left: Box<dyn Expression>,
+        operator: String,
+        right: Box<dyn Expression>,
+    ) -> InfixExpression {
+        InfixExpression {
+            token,
+            left,
+            operator,
+            right,
+        }
+    }
+}
+
+pub struct IFExpression {
+    pub token: Token,
+    pub condition: Box<dyn Expression>,
+    pub consequence: BlockStatement,
+    pub alternative: BlockStatement,
+}
+
+impl Node for IFExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        let mut ans = String::from("if");
+        ans.push_str(self.condition.to_string().as_str());
+        ans.push_str(" ");
+        ans.push_str(self.consequence.to_string().as_str());
+
+        if self.alternative.statements.len() > 0 {
+            ans.push_str(" ");
+
+            ans.push_str("else ");
+
+            ans.push_str(self.alternative.to_string().as_str());
+        }
+       
+        ans
+    }
+}
+
+impl Expression for IFExpression {
+    fn expression_node(&self) {}
+}
+
+impl IFExpression {
+    pub fn new(
+        token: Token,
+        condition: Box<dyn Expression>,
+        consequence: BlockStatement,
+        alternative: BlockStatement,
+    ) -> IFExpression {
+        IFExpression {
+            token,
+            condition,
+            consequence,
+            alternative,
+        }
+    }
+}
+pub struct BlockStatement {
+    pub token: Token,
+    pub statements: Vec<Box<dyn Statement>>,
+}
+
+impl Node for BlockStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        let mut ans = String::new();
+        for st in &self.statements {
+            ans.push_str(st.to_string().as_str());
+        }
+
+        ans
+    }
+}
+
+impl Expression for BlockStatement {
+    fn expression_node(&self) {}
+}
+
+impl BlockStatement {
+    pub fn new(token: Token, statements: Vec<Box<dyn Statement>>) -> BlockStatement {
+        BlockStatement { token, statements }
+    }
+}
+
+pub struct FunctionLiteral {
+    pub token: Token,
+    pub params: Vec<Identifier>,
+    pub body: BlockStatement
+}
+
+impl Node for FunctionLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        let mut ans = String::new();
+        ans.push_str(self.token_literal().as_str());
+        ans.push_str("(");
+        for st in &self.params {
+            ans.push_str(st.to_string().as_str());
+            ans.push_str(",");
+        }
+        if ans.ends_with(",") {
+            ans.pop();
+        }
+        ans.push_str(")");
+
+        ans.push_str(self.body.to_string().as_str());
+        ans
+    }
+}
+
+impl Expression for FunctionLiteral {
+    fn expression_node(&self) {}
+}
+
+impl FunctionLiteral {
+    pub fn new(token: Token, params: Vec<Identifier>, body: BlockStatement) -> FunctionLiteral {
+        FunctionLiteral { token, params, body }
+    }
+}
+
+
+pub struct CallExpression {
+    pub token: Token,
+    pub func: Box<dyn Expression>,
+    pub args: Vec<Box<dyn Expression>>,
+}
+
+impl Node for CallExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn to_string(&self) -> String {
+        let mut ans = String::new();
+        ans.push_str(self.func.to_string().as_str());
+        ans.push_str("(");
+        for st in &self.args {
+            ans.push_str(st.to_string().as_str());
+            ans.push_str(",");
+        }
+        if ans.ends_with(","){
+            ans.pop();
+        }
+        ans.push_str(")");
+
+
+        ans
+    }
+}
+
+impl Expression for CallExpression {
+    fn expression_node(&self) {}
+}
+
+impl CallExpression {
+    pub fn new(token: Token, func: Box<dyn Expression>, args: Vec<Box<dyn Expression>>) -> CallExpression {
+        CallExpression { token, func, args }
+    }
+}
 
 #[cfg(test)]
-mod tests{
-    use crate::token::token::TokenType;
+mod tests {
     use super::*;
-    
+    use crate::token::token::TokenType;
+
     #[test]
     fn test_string() {
         let mut program = Program::new();
         let token = Token::new(TokenType::LET, String::from("let"));
-        let name = Identifier::new(Token::new(TokenType::IDENT, String::from("myVar")), String::from("myVar"));
-        let value = Identifier::new(Token::new(TokenType::IDENT, String::from("anotherVar")), String::from("anotherVar"));
+        let name = Identifier::new(
+            Token::new(TokenType::IDENT, String::from("myVar")),
+            String::from("myVar"),
+        );
+        let value = Identifier::new(
+            Token::new(TokenType::IDENT, String::from("anotherVar")),
+            String::from("anotherVar"),
+        );
         let letstmt = LetStatement::new(token, name, Box::new(value));
         program.statements.push(Box::new(letstmt));
-       
     }
 }

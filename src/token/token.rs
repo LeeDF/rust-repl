@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub(crate) enum TokenType {
     ILLEGAL,
     EOF,
@@ -11,6 +11,7 @@ pub(crate) enum TokenType {
     EQ,
     NOT_EQ,
     BANG,
+    MINUS,
 
     COMMA,
     SEMICOLON,
@@ -25,6 +26,8 @@ pub(crate) enum TokenType {
     IF,
     ELSE,
     RETURN,
+    SLASH,
+    ASTERISK
 }
 
 impl TokenType {
